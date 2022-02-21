@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
+const Location_1 = __importDefault(require("../models/Location"));
 const UserSchema = new mongoose_1.default.Schema({
     username: { type: String, required: true },
     password: { type: String, required: true },
@@ -17,9 +18,6 @@ const UserSchema = new mongoose_1.default.Schema({
     biography: String,
     dateOfBirth: Date,
     joined: { type: Date, default: Date.now },
-    location: {
-        latitude: { type: Number, default: 0.0 },
-        longitude: { type: Number, default: 0.0 },
-    }
+    location: Location_1.default
 }, { collection: 'users' });
 exports.default = UserSchema;
