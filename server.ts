@@ -11,10 +11,22 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-mongoose.connect('mongodb://localhost:27017/tuiter')
+// build the connection string
+//mongodb+srv://<username>:<password>@cluster0.ywwle.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
+const PROTOCOL = "mongodb+srv";
+const DB_USERNAME = "nickyl279";
+const DB_PASSWORD = "QZ3PZFfSpe77aJXy";
+const HOST = "cluster0.ywwle.mongodb.net";
+const DB_NAME = "myFirstDatabase";
+const DB_QUERY = "retryWrites=true&w=majority";
+const connectionString = `${PROTOCOL}://${DB_USERNAME}:${DB_PASSWORD}@${HOST}/${DB_NAME}?${DB_QUERY}`;
+// connect to the database
+mongoose.connect(connectionString);
+
+//mongoose.connect('mongodb://localhost:27017/tuiter')
 
 app.get('/', (req: Request, res: Response) =>
-  res.send('This is the root of the server')
+  res.send('Hello World!')
 );
 
 const userController = UserController.getInstance(app);
