@@ -1,9 +1,3 @@
-<<<<<<< Updated upstream
-import {Request, Response, Express} from "express";
-import TuitDao from "../daos/TuitDao";
-import TuitControllerI from "../interfaces/TuitController";
-import Tuit from "../models/Tuit";
-=======
 /**
  * @file Controller RESTful Web service API for tuits resource
  */
@@ -11,7 +5,6 @@ import TuitDao from '../daos/TuitDao';
 import Tuit from '../models/tuits/Tuit';
 import {Express, Request, Response} from 'express';
 import TuitControllerI from '../interfaces/TuitControllerI';
->>>>>>> Stashed changes
 
 /**
  * @class TuitController Implements RESTful Web service API for tuits resource.
@@ -30,40 +23,6 @@ import TuitControllerI from '../interfaces/TuitControllerI';
  * RESTful Web service API
  */
 export default class TuitController implements TuitControllerI {
-<<<<<<< Updated upstream
-    app: Express;
-    tuitDao: TuitDao;
-
-    constructor(app: Express, tuitDao: TuitDao) {
-        this.app = app;
-        this.tuitDao = tuitDao;
-        this.app.get('/tuits', this.findAllTuits);
-        this.app.get('/tuits/:tid', this.findTuitById);
-        this.app.get('/users/:uid/tuits', this.findTuitsByUser);
-        this.app.post('/tuits', this.createTuit);
-        this.app.delete('/tuits/:tid', this.deleteTuit);
-        this.app.put('/tuits/:tid', this.updateTuit);
-    }
-
-    findAllTuits = (req: Request, res: Response) =>
-        this.tuitDao.findAllTuits()
-            .then(tuits => res.json(tuits));
-    findTuitById = (req: Request, res: Response) =>
-        this.tuitDao.findTuitById(req.params.tid)
-            .then(tuit => res.json(tuit));
-    findTuitsByUser = (req: Request, res: Response) =>
-        this.tuitDao.findTuitsByUser(req.params.uid)
-            .then((tuits: Tuit[]) => res.json(tuits));
-    createTuit = (req: Request, res: Response) =>
-        this.tuitDao.createTuit(req.body)
-            .then(tuit => res.json(tuit));
-    deleteTuit = (req: Request, res: Response) =>
-        this.tuitDao.deleteTuit(req.params.tid)
-            .then(status => res.json(status));
-    updateTuit = (req: Request, res: Response) =>
-        this.tuitDao.updateTuit(req.params.tid, req.body)
-            .then(status => res.json(status));
-=======
     private static tuitDao: TuitDao = TuitDao.getInstance();
     private static tuitController: TuitController | null = null;
 
@@ -157,5 +116,4 @@ export default class TuitController implements TuitControllerI {
         TuitController.tuitDao
             .deleteTuit(req.params.uid)
             .then((status) => res.send(status));
->>>>>>> Stashed changes
 }
