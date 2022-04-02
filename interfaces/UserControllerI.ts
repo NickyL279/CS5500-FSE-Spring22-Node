@@ -1,4 +1,4 @@
-import {Request, Response} from 'express';
+import {NextFunction, Request, Response} from 'express';
 
 export default interface UserController {
     findAllUsers(req: Request, res: Response): void;
@@ -10,4 +10,6 @@ export default interface UserController {
     deleteUser(req: Request, res: Response): void;
 
     updateUser(req: Request, res: Response): void;
+
+    deleteUserByName(req: Request, res: Response, next: NextFunction): void;
 }

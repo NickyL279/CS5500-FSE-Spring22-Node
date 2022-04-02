@@ -3,7 +3,7 @@
  */
 import UserDao from '../daos/UserDao';
 import User from '../models/users/User';
-import {Express, Request, Response} from 'express';
+import {Express, NextFunction, Request, Response} from 'express';
 import UserControllerI from '../interfaces/UserControllerI';
 
 /**
@@ -38,6 +38,7 @@ export default class UserController implements UserControllerI {
             app.post('/api/users', UserController.userController.createUser);
             app.put('/api/users/:uid', UserController.userController.updateUser);
             app.delete('/api/users/:uid', UserController.userController.deleteUser);
+            app.delete("/api/users/username/:name", UserController.userController.deleteUserByName);
         }
         return UserController.userController;
     };
@@ -105,4 +106,18 @@ export default class UserController implements UserControllerI {
         UserController.userDao
             .deleteUser(req.params.uid)
             .then((status) => res.send(status));
+
+    /**
+     * Deletes a user from the database by the username
+     * @param {Request} req Represents request from the client, including the path parameter name identifying
+     * the username
+     * @param {Response} res Represents response to the client, including status on whether deleting was
+     * successful or not
+     * @param next Error handling function
+     */
+    deleteUserByName = (req: Request, res: Response, next: NextFunction) => {
+        UserController.userDao.deleteUserByName(req.params.name)
+            .then(status => res.json(status))
+            .catch(next);
+    }
 }

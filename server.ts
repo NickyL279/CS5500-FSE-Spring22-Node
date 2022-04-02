@@ -1,18 +1,30 @@
+/**
+ * @file Implements an Express Node HTTP server. Declares RESTful web services
+ * enabling CRUD operations on the following resources:
+ * <ul>
+ *     <li>users</li>
+ *     <li>tuits</li>
+ *     <li>likes</li>
+ *     <li>bookmarks</li>
+ *     <li>messages</li>
+ *     <li>follows</li>
+ * </ul>
+ *
+ * Connects to a remote MongoDB instance hosted on the Atlas cloud database service.
+ */
 import express, {Request, Response} from 'express';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
+import dotenv, {config} from 'dotenv';
 import UserController from './controllers/UserController';
 import TuitController from './controllers/TuitController';
 import LikeController from "./controllers/LikeController";
 import FollowController from "./controllers/FollowController";
 import BookmarkController from "./controllers/BookmarkController";
 import MessageController from "./controllers/MessageController";
-var cors = require('cors')
 
-dotenv.config();
-const app = express();
-app.use(express.json());
-app.use(cors());
+const cors = require('cors');
+const session = require("express-session");
+require('dotenv').config();
 
 //mongodb+srv://<username>:<password>@cluster0.ywwle.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
 const PROTOCOL = "mongodb+srv";
@@ -26,8 +38,34 @@ mongoose.connect(connectionString);
 
 //mongoose.connect('mongodb://localhost:27017/tuiter')
 
+const app = express();
+app.use(
+    cors({
+        credentials: true,
+        origin: process.env.CORS_ORIGIN,
+    })
+);
+
+let sess = {
+    secret: process.env.EXPRESS_SESSION_SECRET,
+    saveUninitialized: true,
+    resave: true,
+    cookie: {
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        secure: process.env.NODE_ENV === 'production',
+    },
+};
+
+if (process.env.NODE_ENV === 'production') {
+    app.set('trust proxy', 1);
+    sess.cookie.secure = true;
+}
+
+app.use(session(sess))
+app.use(express.json());
+
 app.get('/', (req: Request, res: Response) =>
-  res.send('Hello World!')
+    res.send('Hello World!')
 );
 
 const userController = UserController.getInstance(app);
