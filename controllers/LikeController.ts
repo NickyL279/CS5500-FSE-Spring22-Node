@@ -3,6 +3,7 @@
  */
 import {Express, Request, Response} from 'express';
 import LikeDao from '../daos/LikeDao';
+import TuitDao from '../daos/TuitDao';
 import LikeControllerI from '../interfaces/LikeControllerI';
 
 /**
@@ -25,6 +26,10 @@ import LikeControllerI from '../interfaces/LikeControllerI';
 export default class LikeController implements LikeControllerI {
     private static likeDao: LikeDao = LikeDao.getInstance();
     private static likeController: LikeController | null = null;
+    //private static likeDao: LikeDao = LikeDao.getInstance();
+    //private static dislikeDao: DislikeDao = DislikeDao.getInstance();
+    private static tuitDao: TuitDao = TuitDao.getInstance();
+    //private static likeController: LikeController | null = null;
 
     /**
      * Creates singleton controller instance
@@ -38,7 +43,9 @@ export default class LikeController implements LikeControllerI {
             app.get('/api/users/:uid/likes', LikeController.likeController.findAllTuitsLikedByUser);
             app.get('/api/tuits/:tid/likes', LikeController.likeController.findAllUsersThatLikedTuit);
             app.post('/api/users/:uid/likes/:tid', LikeController.likeController.userLikesTuit);
+            app.put('/api/users/:uid/likes/:tid', LikeController.likeController.userTogglesTuitLikes);
             app.delete('/api/users/:uid/unlikes/:tid', LikeController.likeController.userUnlikesTuit);
+            // app.get('/api/users/:uid/likes/:tid', LikeController.likeController.checkIfLike);
         }
         return LikeController.likeController;
     };
@@ -94,4 +101,58 @@ export default class LikeController implements LikeControllerI {
         LikeController.likeDao
             .userUnlikesTuit(req.params.uid, req.params.tid)
             .then((status) => res.send(status));
+
+    // /**
+    //  * Check if a certain user has liked a certain tuit
+    //  * @param {Request} req Represents request from client, including the path
+    //  * parameter tid and uid representing the liked tuits id and the user id
+    //  * @param {Response} res Represents response to client, including the
+    //  * body formatted as JSON arrays containing the user objects
+    //  */
+    // checkIfLike = async (req: Request, res: Response) => {
+    //     const tid = req.params.tid;
+    //     const uid = req.params.uid;
+    //     const profile = req.session['profile'];
+    //     const userId = uid === 'me' && profile ? profile._id : uid;
+    //
+    //     LikeController.likeDao
+    //         .findUserLikesTuit(userId, tid)
+    //         .then((islike) => res.json(islike));
+    // };
+
+    /**
+     * @param {Request} req Represents request from client, including the
+     * path parameters uid and tid representing the user that is liking the tuit
+     * and the tuit being liked
+     * @param {Response} res Represents response to client, including the
+     * body formatted as JSON containing the new likes that was inserted in the
+     * database
+     */
+    userTogglesTuitLikes = async (req: Request, res: Response) => {
+        const likeDao = LikeController.likeDao;
+        //const dislikeDao = LikeController.dislikeDao;
+        const tuitDao = LikeController.tuitDao;
+        const uid = req.params.uid;
+        const tid = req.params.tid;
+        const profile = req.session['profile'];
+        const userId = uid === 'me' && profile ? profile._id : uid;
+        try {
+            const userAlreadyLikedTuit = await likeDao.findUserLikesTuit(userId, tid);
+            const howManyLikedTuit = await likeDao.countHowManyLikedTuit(tid);
+
+            let tuit = await tuitDao.findTuitById(tid);
+            if (userAlreadyLikedTuit) {
+                await likeDao.userUnlikesTuit(userId, tid);
+                tuit.stats.likes = howManyLikedTuit - 1;
+            } else {
+                await LikeController.likeDao.userLikesTuit(userId, tid);
+                tuit.stats.likes = howManyLikedTuit + 1;
+            }
+            await tuitDao.updateLikes(tid, tuit.stats);
+            res.sendStatus(200);
+        } catch (e) {
+            res.sendStatus(404);
+        }
+    };
+
 }
