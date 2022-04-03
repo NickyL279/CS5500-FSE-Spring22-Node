@@ -5,6 +5,7 @@ import {Express, Request, Response} from 'express';
 import LikeDao from '../daos/LikeDao';
 import TuitDao from '../daos/TuitDao';
 import LikeControllerI from '../interfaces/LikeControllerI';
+import DislikeDao from "../daos/DislikeDao";
 
 /**
  * @class LikeController Implements RESTful Web service API for likes resource.
@@ -27,7 +28,7 @@ export default class LikeController implements LikeControllerI {
     private static likeDao: LikeDao = LikeDao.getInstance();
     private static likeController: LikeController | null = null;
     //private static likeDao: LikeDao = LikeDao.getInstance();
-    //private static dislikeDao: DislikeDao = DislikeDao.getInstance();
+    private static dislikeDao: DislikeDao = DislikeDao.getInstance();
     private static tuitDao: TuitDao = TuitDao.getInstance();
     //private static likeController: LikeController | null = null;
 
@@ -72,10 +73,17 @@ export default class LikeController implements LikeControllerI {
      * @param {Response} res Represents response to client, including the
      * body formatted as JSON arrays containing the tuit objects that were liked
      */
-    findAllTuitsLikedByUser = (req: Request, res: Response) =>
-        LikeController.likeDao
-            .findAllTuitsLikedByUser(req.params.uid)
-            .then((likes) => res.json(likes));
+    findAllTuitsLikedByUser = (req: Request, res: Response) => {
+        const uid = req.params.uid;
+        const profile = req.session['profile'];
+        const userId = uid === 'me' && profile ? profile._id : uid;
+
+        LikeController.likeDao.findAllTuitsLikedByUser(userId).then((likes) => {
+            const likesNonNullTuits = likes.filter((like) => like.tuit);
+            const tuitsFromLikes = likesNonNullTuits.map((like) => like.tuit);
+            res.json(tuitsFromLikes);
+        });
+    };
 
     /**
      * @param {Request} req Represents request from client, including the
@@ -102,23 +110,23 @@ export default class LikeController implements LikeControllerI {
             .userUnlikesTuit(req.params.uid, req.params.tid)
             .then((status) => res.send(status));
 
-    // /**
-    //  * Check if a certain user has liked a certain tuit
-    //  * @param {Request} req Represents request from client, including the path
-    //  * parameter tid and uid representing the liked tuits id and the user id
-    //  * @param {Response} res Represents response to client, including the
-    //  * body formatted as JSON arrays containing the user objects
-    //  */
-    // checkIfLike = async (req: Request, res: Response) => {
-    //     const tid = req.params.tid;
-    //     const uid = req.params.uid;
-    //     const profile = req.session['profile'];
-    //     const userId = uid === 'me' && profile ? profile._id : uid;
-    //
-    //     LikeController.likeDao
-    //         .findUserLikesTuit(userId, tid)
-    //         .then((islike) => res.json(islike));
-    // };
+    /**
+     * Check if a certain user has liked a certain tuit
+     * @param {Request} req Represents request from client, including the path
+     * parameter tid and uid representing the liked tuits id and the user id
+     * @param {Response} res Represents response to client, including the
+     * body formatted as JSON arrays containing the user objects
+     */
+    checkIfLike = async (req: Request, res: Response) => {
+        const tid = req.params.tid;
+        const uid = req.params.uid;
+        const profile = req.session['profile'];
+        const userId = uid === 'me' && profile ? profile._id : uid;
+
+        LikeController.likeDao
+            .findUserLikesTuit(userId, tid)
+            .then((islike) => res.json(islike));
+    };
 
     /**
      * @param {Request} req Represents request from client, including the

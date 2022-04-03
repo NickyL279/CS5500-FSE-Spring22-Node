@@ -22,6 +22,7 @@ import FollowController from "./controllers/FollowController";
 import BookmarkController from "./controllers/BookmarkController";
 import MessageController from "./controllers/MessageController";
 import AuthenticationController from "./controllers/auth-controller";
+import DislikeController from "./controllers/DislikeController";
 
 const cors = require('cors');
 const session = require("express-session");
@@ -43,8 +44,8 @@ const app = express();
 app.use(
     cors({
         credentials: true,
-        origin: process.env.CORS_ORIGIN,
-        // origin: "http://localhost:3000"
+        // origin: process.env.CORS_ORIGIN,
+        origin: "http://localhost:3000"
     })
 );
 
@@ -80,6 +81,8 @@ app.get('/', (req: Request, res: Response) =>
 // create RESTful Web service API
 const userController = UserController.getInstance(app);
 const tuitController = TuitController.getInstance(app);
+const likesController = LikeController.getInstance(app);
+const dislikeController = DislikeController.getInstance(app);
 //const likesController = LikeController.getInstance(app);
 //const dislikeController = DislikeController.getInstance(app);
 
